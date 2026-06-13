@@ -4,7 +4,8 @@ from fastapi import FastAPI
 
 app = FastAPI()
 
-model = joblib.load("retention_predictor.pkl")
+model_retention = joblib.load("retention_predictor.pkl")
+model_memory_strength = joblib.load("xgb_model.pkl")
 
 @app.get("/")
 def home():
@@ -29,8 +30,19 @@ def predict_retention(
     "study_duration": study_duration
 }])
 
-    prediction = model.predict(data)[0]
+    prediction = model_retention.predict(data)[0]
+    memory_data = pd.DataFrame([{
+    "nth_revision": nth_revision,
+    "sleep_duration": sleep_duration,
+    "topic_difficulty": topic_difficulty,
+    "study_duration": study_duration,
+    "session_time": session_time,
+    "retention": prediction,
+    "revision_timing": revision_timing
+}])
+    memory_strength= model_memory_strength.predict(memory_data)[0]
 
     return {
-        "predicted_retention": round(float(prediction), 2)
+        "predicted_retention": round(float(prediction), 2),
+        "memory_strength": round(float(memory_strength), 2)
     }
