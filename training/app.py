@@ -1,6 +1,7 @@
 import joblib
 import pandas as pd
 from fastapi import FastAPI
+import numpy as np
 
 app = FastAPI()
 
@@ -41,8 +42,18 @@ def predict_retention(
     "revision_timing": revision_timing
 }])
     memory_strength= model_memory_strength.predict(memory_data)[0]
+    threshold = 80
+
+    next_revision_hours = (
+    -memory_strength *
+    np.log(threshold / 100)
+)
+
+    next_revision_days = next_revision_hours / 24
 
     return {
         "predicted_retention": round(float(prediction), 2),
-        "memory_strength": round(float(memory_strength), 2)
+        "memory_strength": round(float(memory_strength), 2),
+        "next_revision_hours": round(float(next_revision_hours), 2),
+    "next_revision_days": round(float(next_revision_days), 2)
     }
