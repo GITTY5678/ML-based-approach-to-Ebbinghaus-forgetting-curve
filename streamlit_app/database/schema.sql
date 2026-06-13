@@ -23,11 +23,7 @@ CREATE TABLE study_sessions(
 
     study_duration REAL,
 
-    session_time INTEGER,
-
     retention REAL,
-
-    memory_strength REAL,
 
     next_revision_hours REAL,
 

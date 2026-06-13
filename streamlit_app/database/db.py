@@ -1,10 +1,32 @@
 import sqlite3
 import pandas as pd
-import pandas as pd
-from datetime import datetime
+
+# --------------------------------
+
+# Database Connection
+
+# --------------------------------
+
+def get_connection():
+
+
+    conn = sqlite3.connect(
+        "memory_retention.db",
+        check_same_thread=False
+    )
+
+    return conn
+
+
+# --------------------------------
+
+# Topic Information
+
+# --------------------------------
 
 def get_topic_info(topic_name):
-    
+
+
     conn = get_connection()
 
     cursor = conn.cursor()
@@ -28,6 +50,13 @@ def get_topic_info(topic_name):
 
     return result
 
+
+# --------------------------------
+
+# Topic History
+
+# --------------------------------
+
 def get_topic_history(topic_name):
 
     conn = get_connection()
@@ -36,7 +65,6 @@ def get_topic_history(topic_name):
     SELECT
         nth_revision,
         retention,
-        memory_strength,
         next_revision_hours,
         created_at
     FROM study_sessions
@@ -53,15 +81,12 @@ def get_topic_history(topic_name):
     conn.close()
 
     return df
-def get_connection():
 
-    conn = sqlite3.connect(
-        "memory_retention.db",
-        check_same_thread=False
-    )
+# --------------------------------
 
-    return conn
+# Save Study Session
 
+# --------------------------------
 
 def save_session(
     topic_name,
@@ -70,9 +95,7 @@ def save_session(
     sleep_duration,
     topic_difficulty,
     study_duration,
-    session_time,
     retention,
-    memory_strength,
     next_revision_hours
 ):
 
@@ -84,49 +107,52 @@ def save_session(
         """
         INSERT INTO study_sessions(
 
-            topic_name,
-            revision_timing,
-            nth_revision,
-            sleep_duration,
-            topic_difficulty,
-            study_duration,
-            session_time,
-            retention,
-            memory_strength,
-            next_revision_hours
+    topic_name,
+    revision_timing,
+    nth_revision,
+    sleep_duration,
+    topic_difficulty,
+    study_duration,
+    retention,
+    next_revision_hours
 
-        )
+)
 
-        VALUES(?,?,?,?,?,?,?,?,?,?)
+VALUES(?,?,?,?,?,?,?,?)
         """,
         (
-            topic_name,
-            revision_timing,
-            nth_revision,
-            sleep_duration,
-            topic_difficulty,
-            study_duration,
-            session_time,
-            retention,
-            memory_strength,
-            next_revision_hours
-        )
+    topic_name,
+    revision_timing,
+    nth_revision,
+    sleep_duration,
+    topic_difficulty,
+    study_duration,
+    retention,
+    next_revision_hours
+)
     )
 
     conn.commit()
 
     conn.close()
+
+# --------------------------------
+
+# Latest Session
+
+# --------------------------------
+
 def get_latest_session():
-    
+
     conn = get_connection()
 
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        SELECT retention,
-               memory_strength,
-               next_revision_hours
+        SELECT
+            retention,
+            next_revision_hours
         FROM study_sessions
         ORDER BY id DESC
         LIMIT 1
@@ -139,8 +165,14 @@ def get_latest_session():
 
     return row
 
+# --------------------------------
+
+# Dashboard Metrics
+
+# --------------------------------
+
 def get_total_sessions():
-    
+
     conn = get_connection()
 
     cursor = conn.cursor()
@@ -156,7 +188,6 @@ def get_total_sessions():
     return count
 
 def get_average_retention():
-    
     conn = get_connection()
 
     cursor = conn.cursor()
@@ -171,8 +202,14 @@ def get_average_retention():
 
     return avg if avg else 0
 
+# --------------------------------
+
+# Analytics
+
+# --------------------------------
+
 def get_all_sessions():
-    
+
     conn = get_connection()
 
     df = pd.read_sql_query(
@@ -188,20 +225,28 @@ def get_all_sessions():
 
     return df
 
+# --------------------------------
+
+# Revision Planner
+
+# --------------------------------
+
 def get_revision_schedule():
-    
+
     conn = get_connection()
 
     cursor = conn.cursor()
 
-    cursor.execute("""
+    cursor.execute(
+        """
         SELECT
             topic_name,
             next_revision_hours,
             created_at
         FROM study_sessions
         ORDER BY id DESC
-    """)
+        """
+    )
 
     rows = cursor.fetchall()
 
@@ -209,8 +254,14 @@ def get_revision_schedule():
 
     return rows
 
+# --------------------------------
+
+# Authentication
+
+# --------------------------------
+
 def create_user(username, password):
-    
+
     conn = get_connection()
 
     cursor = conn.cursor()
@@ -239,9 +290,10 @@ def create_user(username, password):
     finally:
 
         conn.close()
-        
+
+
 def login_user(username, password):
-    
+
     conn = get_connection()
 
     cursor = conn.cursor()
@@ -250,8 +302,8 @@ def login_user(username, password):
         """
         SELECT *
         FROM users
-        WHERE username=?
-        AND password=?
+        WHERE username = ?
+        AND password = ?
         """,
         (username, password)
     )
@@ -261,4 +313,3 @@ def login_user(username, password):
     conn.close()
 
     return user
-

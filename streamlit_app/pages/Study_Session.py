@@ -100,7 +100,9 @@ with col2:
             )
 
         else:
-            st.warning("Start a study session first.")
+            st.warning(
+                "Start a study session first."
+            )
 
 # ---------------------------
 # Display Study Duration
@@ -116,6 +118,9 @@ if study_duration > 0:
 # ---------------------------
 # Auto Detect Revision Info
 # ---------------------------
+
+revision_timing = 0
+nth_revision = 1
 
 if topic_name:
 
@@ -133,11 +138,6 @@ if topic_name:
             datetime.now()
             - last_study_time
         ).total_seconds() / 3600
-
-    else:
-
-        nth_revision = 1
-        revision_timing = 0
 
     st.info(
         f"Detected Revision Number: {nth_revision}"
@@ -157,26 +157,27 @@ if st.button("Predict"):
         st.error("Please enter a topic name.")
         st.stop()
 
-    retention, memory_strength = predict(
+    retention = predict(
         revision_timing,
         nth_revision,
         sleep_duration,
         topic_difficulty,
         study_duration,
-        1  # session_time fixed internally
+        1
     )
 
     hours, days = calculate_revision_time(
-        memory_strength
+        retention
     )
 
-    # Save for Dashboard
+    # Store for Dashboard
+
     st.session_state["retention"] = retention
-    st.session_state["memory_strength"] = memory_strength
     st.session_state["next_hours"] = hours
     st.session_state["next_days"] = days
 
     # Save to Database
+
     save_session(
         topic_name,
         revision_timing,
@@ -184,25 +185,20 @@ if st.button("Predict"):
         sleep_duration,
         topic_difficulty,
         study_duration,
-        1,
         retention,
-        memory_strength,
         hours
     )
 
-    # Display Results
+    # Results
+
     st.success(
         f"Retention: {retention:.2f}%"
-    )
-
-    st.info(
-        f"Memory Strength: {memory_strength:.2f}"
     )
 
     st.warning(
         f"Next Revision: {hours:.2f} Hours"
     )
 
-    st.warning(
+    st.info(
         f"Next Revision: {days:.2f} Days"
     )
