@@ -18,7 +18,7 @@ def predict_retention(
     topic_difficulty: int,
     study_duration: float,
     session_time: int
-):
+ ):
 
     data = pd.DataFrame([{
     "revision_timing": revision_timing,
